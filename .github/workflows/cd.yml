@@ -4,11 +4,28 @@ name: Continuous Deployment
 on: push
 
 jobs:
-  hello-gh-actions:
-    name: Hello Github Actions
+  test:
+    name: Test
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Run Tests
-        run: echo "RUNNING TESTS"
+      - name: Test
+        run: docker-compose run --rm app sh -c "python manage.py test"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Lint
+        run: docker-compose run --rm app sh -c "flake8"
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
